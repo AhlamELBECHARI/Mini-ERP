@@ -175,8 +175,7 @@ mini-erp-2/
 │   │   └── projets.js       # Logique projets
 │   └── test/                # Pages de test
 ├── uml/
-├── README.md                # Documentation
-└── demo-video.mp4
+└──  README.md                # Documentation
 
 ```
 
