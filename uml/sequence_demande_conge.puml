@@ -1,0 +1,17 @@
+@startuml
+title Diagramme de Séquence – Soumission d’une Demande de Congé
+
+actor Employé
+participant "Interface Web" as UI
+participant "Service Congés" as SC
+participant "Base de Données" as BD
+participant "Service Notification" as SN
+
+Employé -> UI : Remplir formulaire de congé
+UI -> SC : envoyerDemandeCongé(dates, type)
+SC -> BD : vérifierSoldeCongé()
+BD --> SC : soldeOK
+SC -> BD : enregistrerDemandeCongé()
+SC -> SN : notifierManager()
+SN --> Employé : Confirmation envoyée
+@enduml

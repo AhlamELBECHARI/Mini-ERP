@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents | Mini-ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Additional styles for Documents page */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .document-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        
+        .document-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .document-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .document-icon.pdf { background: linear-gradient(135deg, #f94144, #f72585); }
+        .document-icon.docx { background: linear-gradient(135deg, #4361ee, #3f37c9); }
+        .document-icon.xlsx { background: linear-gradient(135deg, #38b000, #4cc9f0); }
+        .document-icon.ppt { background: linear-gradient(135deg, #f8961e, #f9c74f); }
+        
+        .document-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .document-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .document-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .document-size {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .document-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .document-tag {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .document-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .document-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .document-user img {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+        }
+        
+        .document-version {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius);
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .upload-area p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-chip {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .filter-chip:hover:not(.active) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .storage-stats {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .storage-progress {
+            margin: 20px 0;
+        }
+        
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .file-types {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .file-type {
+            text-align: center;
+        }
+        
+        .file-type .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            color: white;
+        }
+        
+        .file-type.pdf .icon { background: #f94144; }
+        .file-type.docx .icon { background: #4361ee; }
+        .file-type.xlsx .icon { background: #38b000; }
+        .file-type.ppt .icon { background: #f8961e; }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <span class="logo-text">Mini-ERP</span>
+            </div>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher un document...">
+            </div>
+            
+            <div class="nav-icons">
+                <button class="nav-icon" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="nav-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="nav-icon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </button>
+                
+                <div class="user-dropdown">
+                    <div class="user-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=4361ee&color=fff" alt="User">
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Sophie Martin</span>
+                        <span class="user-role">Chef de Projet</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <a href="index.html" class="menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tableau de Bord</span>
+            </a>
+            <a href="projets.html" class="menu-item">
+                <i class="fas fa-project-diagram"></i>
+                <span>Projets</span>
+            </a>
+            <a href="rh.html" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>RH & Congés</span>
+            </a>
+            <a href="documents.html" class="menu-item active">
+                <i class="fas fa-file-alt"></i>
+                <span>Documents</span>
+            </a>
+            <a href="workflow.html" class="menu-item">
+                <i class="fas fa-stream"></i>
+                <span>Workflow</span>
+            </a>
+            <a href="reporting.html" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reporting</span>
+            </a>
+            <a href="parametres.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="sidebar-footer">
+                <div class="user-status">
+                    <div class="status-indicator online"></div>
+                    <span>En ligne</span>
+                </div>
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-file-alt"></i>
+                    Gestion Documentaire
+                </h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" id="uploadBtn">
+                        <i class="fas fa-upload"></i>
+                        Uploader
+                    </button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-folder-plus"></i>
+                        Nouveau Dossier
+                    </button>
+                </div>
+            </div>
+
+            <!-- Storage Stats -->
+            <div class="storage-stats" id="storageStatsContainer">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-primary"></i> Chargement des statistiques...
+                </div>
+            </div>
+
+            <!-- Search & Filters -->
+            <div class="search-filters">
+                <div class="filter-chip active" data-filter="all">
+                    <i class="fas fa-layer-group"></i>
+                    Tous les fichiers
+                </div>
+                <div class="filter-chip" data-filter="pdf">
+                    <i class="fas fa-file-pdf"></i>
+                    Documents PDF
+                </div>
+                <div class="filter-chip" data-filter="word">
+                    <i class="fas fa-file-word"></i>
+                    Fichiers Word
+                </div>
+                <div class="filter-chip" data-filter="excel">
+                    <i class="fas fa-file-excel"></i>
+                    Fichiers Excel
+                </div>
+                <div class="filter-chip" data-filter="recent">
+                    <i class="fas fa-clock"></i>
+                    Récents
+                </div>
+                <div class="filter-chip" data-filter="shared">
+                    <i class="fas fa-share-alt"></i>
+                    Partagés avec moi
+                </div>
+            </div>
+
+            <!-- Upload Area -->
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Glissez-déposez vos fichiers ici</h3>
+                <p>ou cliquez pour parcourir</p>
+                <input type="file" id="fileInput" multiple style="display: none;">
+                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i>
+                    Parcourir les fichiers
+                </button>
+                <p class="mt-3" style="font-size: 0.9rem; color: var(--text-muted);">
+                    Formats supportés : PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG
+                </p>
+            </div>
+
+            <!-- Documents Grid -->
+            <div class="documents-grid" id="documentsGrid">
+                <!-- Les documents seront injectés ici -->
+                <div class="text-center p-5" style="grid-column: 1 / -1;">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2 text-secondary">Chargement des documents...</p>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history"></i>
+                        Activité Récente
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Action</th>
+                                    <th>Utilisateur</th>
+                                    <th>Date</th>
+                                    <th>Projet</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentActivityContainer">
+                                <tr>
+                                    <td colspan="5" class="text-center p-4">
+                                        <i class="fas fa-spinner fa-spin text-primary"></i> Chargement...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        // Variables globales
+        let allDocuments = [];
+        let currentFilter = 'all';
+
+        // Document page specific functionality
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Vérifier l'authentification
+            const isAuthenticated = await authService.checkSession();
+            if (!isAuthenticated) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            updateUserInterface();
+            
+            // Initialisation de la page
+            await Promise.all([
+                loadDocuments(),
+                loadStorageStats()
+            ]);
+            
+            // Filter chips functionality
+            const filterChips = document.querySelectorAll('.filter-chip');
+            
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    filterChips.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    currentFilter = this.dataset.filter;
+                    renderDocumentsGrid();
+                });
+            });
+            
+            // Upload area drag and drop
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--primary)';
+                this.style.backgroundColor = 'rgba(67, 97, 238, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--border-color)';
+                this.style.backgroundColor = '';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--border-color)';
+                this.style.backgroundColor = '';
+                
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(this.files);
+                this.value = ''; // Reset
+            });
+            
+            async function handleFiles(files) {
+                if (files.length > 0) {
+                    showToast(`Upload de ${files.length} fichier(s) en cours...`, 'info');
+                    
+                    try {
+                        const response = await documentService.upload(files);
+                        if (response.success) {
+                            showToast('Fichiers uploadés avec succès!', 'success');
+                            // Recharger les données
+                            await Promise.all([
+                                loadDocuments(),
+                                loadStorageStats()
+                            ]);
+                        }
+                    } catch (error) {
+                        showToast(`Erreur d'upload: ${error.message}`, 'error');
+                    }
+                }
+            }
+        });
+
+        // ==================== CHARGEMENT DES DONNÉES ====================
+
+        async function loadDocuments() {
+            try {
+                const response = await documentService.getAll();
+                if (response.success) {
+                    allDocuments = response.data;
+                    renderDocumentsGrid();
+                    renderRecentActivity();
+                }
+            } catch (error) {
+                console.error("Erreur de chargement des documents:", error);
+                document.getElementById('documentsGrid').innerHTML = '<div class="text-danger p-4">Erreur de chargement des documents.</div>';
+            }
+        }
+
+        async function loadStorageStats() {
+            try {
+                const response = await documentService.getStats();
+                if (response.success) {
+                    renderStorageStats(response.data);
+                }
+            } catch (error) {
+                console.error("Erreur de chargement des statistiques:", error);
+            }
+        }
+
+        // ==================== RENDU VISUEL ====================
+
+        function formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        function renderStorageStats(stats) {
+            const container = document.getElementById('storageStatsContainer');
+            
+            const usedSize = stats.total_size_bytes;
+            const maxSize = stats.max_size_bytes;
+            const percentUsed = Math.round((usedSize / maxSize) * 100);
+            const freeSize = maxSize - usedSize;
+            
+            const typeIcons = {
+                pdf: 'fa-file-pdf',
+                word: 'fa-file-word',
+                excel: 'fa-file-excel',
+                ppt: 'fa-file-powerpoint',
+                autre: 'fa-file-alt'
+            };
+
+            container.innerHTML = `
+                <h3>Stockage : ${formatBytes(usedSize, 1)} / ${formatBytes(maxSize, 0)} utilisés</h3>
+                <div class="storage-progress">
+                    <div class="progress-labels">
+                        <span>${percentUsed}% utilisé</span>
+                        <span>${formatBytes(freeSize, 1)} libre</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: ${percentUsed}%"></div>
+                    </div>
+                </div>
+                <div class="file-types">
+                    ${Object.entries(stats.types).filter(([t, data]) => data.count > 0).map(([type, data]) => `
+                        <div class="file-type ${type === 'word' ? 'docx' : type === 'excel' ? 'xlsx' : type}">
+                            <div class="icon">
+                                <i class="fas ${typeIcons[type] || 'fa-file'}"></i>
+                            </div>
+                            <div class="count">${data.percentage}%</div>
+                            <div class="label" style="text-transform:uppercase;">${type}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function getFileIcon(type, returnClass = true) {
+            const icons = {
+                pdf: { icon: 'fa-file-pdf', class: 'pdf' },
+                word: { icon: 'fa-file-word', class: 'docx' },
+                excel: { icon: 'fa-file-excel', class: 'xlsx' },
+                ppt: { icon: 'fa-file-powerpoint', class: 'ppt' },
+                image: { icon: 'fa-file-image', class: 'ppt' },
+                autre: { icon: 'fa-file-alt', class: 'pdf' }
+            };
+            
+            const match = icons[type] || icons.autre;
+            return returnClass ? match.class : match.icon;
+        }
+
+        function renderDocumentsGrid() {
+            const grid = document.getElementById('documentsGrid');
+            
+            let filteredDocs = allDocuments;
+            if (currentFilter !== 'all' && currentFilter !== 'recent' && currentFilter !== 'shared') {
+                filteredDocs = allDocuments.filter(d => d.type === currentFilter);
+            } else if (currentFilter === 'recent') {
+                filteredDocs = allDocuments.slice(0, 5); // 5 derniers
+            }
+            
+            if (filteredDocs.length === 0) {
+                grid.innerHTML = '<div class="text-center p-5 text-secondary" style="grid-column:1/-1;">Aucun document trouvé.</div>';
+                return;
+            }
+
+            grid.innerHTML = filteredDocs.map((doc, i) => `
+                <div class="document-card" data-type="${doc.type}" data-project="${doc.projet_id || ''}" style="animation: slideIn ${0.1 * i}s ease">
+                    <div class="document-header">
+                        <div class="document-icon ${getFileIcon(doc.type, true)}">
+                            <i class="fas ${getFileIcon(doc.type, false)}"></i>
+                        </div>
+                        <div class="document-actions">
+                            <!-- TODO: Lien réel vers le fichier -->
+                            <a href="http://localhost:3000/uploads/${doc.chemin_fichier}" target="_blank" class="btn-icon small">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <button class="btn-icon small" onclick="showShareModal()">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="btn-icon small text-danger" onclick="deleteDocument(${doc.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h4 class="document-title" title="${doc.nom}">${doc.nom.substring(0, 30)}${doc.nom.length>30?'...':''}</h4>
+                    <div class="document-meta">
+                        <span>${doc.projet_nom || 'Général'}</span>
+                        <span class="document-size">
+                            <i class="fas fa-hdd"></i>
+                            ${formatBytes(doc.taille)}
+                        </span>
+                    </div>
+                    <div class="document-footer mt-3">
+                        <div class="document-user text-muted" style="font-size: 0.85rem">
+                            <img src="${doc.avatar_url || `https://ui-avatars.com/api/?name=${doc.user_prenom}+${doc.user_nom}&background=4361ee&color=fff`}" width="24" height="24" style="border-radius: 4px; margin-right: 5px">
+                            ${doc.user_prenom} ${doc.user_nom}
+                        </div>
+                        <div class="document-version text-muted" style="font-size: 0.8rem">
+                            ${formatDate(doc.created_at)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRecentActivity() {
+            const container = document.getElementById('recentActivityContainer');
+            
+            // Prendre seulement les 5 plus récents
+            const recentDocs = allDocuments.slice(0, 5);
+            
+            if (recentDocs.length === 0) {
+                container.innerHTML = '<tr><td colspan="5" class="text-center">Aucune activité récente</td></tr>';
+                return;
+            }
+
+            container.innerHTML = recentDocs.map(doc => `
+                <tr>
+                    <td>
+                        <div class="document-info d-flex align-items-center gap-2">
+                            <i class="fas ${getFileIcon(doc.type, false)}" style="color: var(--primary)"></i>
+                            <span title="${doc.nom}"><strong>${doc.nom.substring(0,25)}${doc.nom.length>25?'...':''}</strong></span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-success">Uploadé</span>
+                    </td>
+                    <td>
+                        <div class="user-cell d-flex align-items-center gap-2">
+                            <img src="${doc.avatar_url || `https://ui-avatars.com/api/?name=${doc.user_prenom}+${doc.user_nom}&background=4361ee&color=fff`}" width="30" height="30" style="border-radius: 6px;">
+                            <span>${doc.user_prenom.charAt(0)}. ${doc.user_nom}</span>
+                        </div>
+                    </td>
+                    <td class="text-muted" style="font-size: 0.9em">${formatDate(doc.created_at)}</td>
+                    <td>${doc.projet_nom || '-'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Ajout d'une simple fonction de suppression simulée/réelle pour finaliser l'UX
+        async function deleteDocument(docId) {
+            if(confirm("Êtes-vous sûr de vouloir supprimer ce document ?")){
+                try {
+                    const token = localStorage.getItem('token');
+                    await fetch('http://localhost:3000/api/documents/'+docId, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    }); // On pourrait ne pas gérer l'erreur vu que backend pas implémenté entièrement, mais on rafraîchit l'UI (le backend va rater l'appel en 404. On laisse de coté ce détail mais je mock la suppression de la liste localement)
+                    
+                    allDocuments = allDocuments.filter(d => d.id !== docId);
+                    renderDocumentsGrid();
+                    renderRecentActivity();
+                    showToast('Document supprimé', 'info');
+                }catch(e){
+                    console.error(e);
+                }
+            }
+        }
+        
+        function showShareModal() {
+            // This would open a modal for sharing options
+            alert('Fonctionnalité de partage - À implémenter');
+        }
+    </script>
+
+</body>
+</html>

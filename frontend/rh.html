@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RH & Congés | Mini-ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Additional styles for RH page */
+        .calendar-view {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        
+        .calendar-day {
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .calendar-date {
+            height: 80px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .calendar-date:hover {
+            background: rgba(67, 97, 238, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .calendar-date.today {
+            background: rgba(67, 97, 238, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .calendar-date .date-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .absence-indicator {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+        }
+        
+        .absence-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        
+        .absence-dot.approved { background: var(--success); }
+        .absence-dot.pending { background: var(--warning); }
+        .absence-dot.rejected { background: var(--danger); }
+        
+        .leave-request-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            transition: var(--transition);
+        }
+        
+        .leave-request-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .leave-request-card.pending {
+            border-left-color: var(--warning);
+            background: rgba(248, 150, 30, 0.1);
+        }
+        
+        .leave-request-card.approved {
+            border-left-color: var(--success);
+            background: rgba(76, 201, 240, 0.1);
+        }
+        
+        .leave-request-card.rejected {
+            border-left-color: var(--danger);
+            background: rgba(249, 65, 68, 0.1);
+        }
+        
+        .leave-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .leave-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .leave-dates {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .leave-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .impact-warning {
+            background: rgba(248, 37, 133, 0.1);
+            border: 1px solid rgba(248, 37, 133, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .impact-warning i {
+            color: var(--accent);
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card-rh {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            border-top: 4px solid;
+        }
+        
+        .stat-card-rh:nth-child(1) { border-color: var(--primary); }
+        .stat-card-rh:nth-child(2) { border-color: var(--secondary); }
+        .stat-card-rh:nth-child(3) { border-color: var(--success); }
+        .stat-card-rh:nth-child(4) { border-color: var(--warning); }
+        
+        .stat-card-rh .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card-rh:nth-child(1) .stat-value { color: var(--primary); }
+        .stat-card-rh:nth-child(2) .stat-value { color: var(--secondary); }
+        .stat-card-rh:nth-child(3) .stat-value { color: var(--success); }
+        .stat-card-rh:nth-child(4) .stat-value { color: var(--warning); }
+        
+        .stat-card-rh .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .stats-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .project-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .project-tag {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <span class="logo-text">Mini-ERP</span>
+            </div>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher dans RH...">
+            </div>
+            
+            <div class="nav-icons">
+                <button class="nav-icon" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="nav-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="nav-icon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </button>
+                
+                <div class="user-dropdown">
+                    <div class="user-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=4361ee&color=fff" alt="User">
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Sophie Martin</span>
+                        <span class="user-role">Chef de Projet</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <a href="index.html" class="menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tableau de Bord</span>
+            </a>
+            <a href="projets.html" class="menu-item">
+                <i class="fas fa-project-diagram"></i>
+                <span>Projets</span>
+            </a>
+            <a href="rh.html" class="menu-item active">
+                <i class="fas fa-users"></i>
+                <span>RH & Congés</span>
+            </a>
+            <a href="documents.html" class="menu-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Documents</span>
+            </a>
+            <a href="workflow.html" class="menu-item">
+                <i class="fas fa-stream"></i>
+                <span>Workflow</span>
+            </a>
+            <a href="reporting.html" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reporting</span>
+            </a>
+            <a href="parametres.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="sidebar-footer">
+                <div class="user-status">
+                    <div class="status-indicator online"></div>
+                    <span>En ligne</span>
+                </div>
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-users"></i>
+                    RH & Gestion des Congés
+                </h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newLeaveModal">
+                        <i class="fas fa-plus"></i>
+                        Nouvelle Demande
+                    </button>
+                    <button class="btn btn-outline" id="toggleCalendar">
+                        <i class="fas fa-calendar-alt"></i>
+                        Calendrier
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card-rh">
+                    <div class="stat-value"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem"></i></div>
+                    <div class="stat-label">Absences en cours</div>
+                </div>
+                <div class="stat-card-rh">
+                    <div class="stat-value"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem"></i></div>
+                    <div class="stat-label">Demandes au total</div>
+                </div>
+                <div class="stat-card-rh">
+                    <div class="stat-value"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem"></i></div>
+                    <div class="stat-label">Taux d'approbation</div>
+                </div>
+                <div class="stat-card-rh">
+                    <div class="stat-value"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem"></i></div>
+                    <div class="stat-label">En attente</div>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div class="calendar-view" id="calendarView">
+                <div class="calendar-header">
+                    <h3>Mai 2024</h3>
+                    <div class="calendar-nav">
+                        <button class="btn-icon" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                        <span>Semaine 20</span>
+                        <button class="btn-icon" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar will be generated dynamically -->
+                </div>
+            </div>
+
+            <!-- Leave Requests -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-inbox"></i>
+                                Demandes en Attente
+                            </h3>
+                            <span class="badge">3</span>
+                        </div>
+                        <div class="card-body" id="pendingLeavesContainer">
+                            <div class="text-center p-4">
+                                <i class="fas fa-spinner fa-spin fa-2x text-primary mb-3"></i>
+                                <p class="text-secondary">Chargement des demandes...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Statistiques RH
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="rhChart"></canvas>
+                            </div>
+                            <div class="stats-summary mt-3">
+                                <div class="stat-item">
+                                    <span class="stat-value">5.2%</span>
+                                    <span class="stat-label">Taux d'absence</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">12</span>
+                                    <span class="stat-label">Jours moyens/collab.</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">85%</span>
+                                    <span class="stat-label">Saturation équipes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Absences -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-clock"></i>
+                        Absences en Cours
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Collaborateur</th>
+                                    <th>Type</th>
+                                    <th>Période</th>
+                                    <th>Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody id="currentAbsencesContainer">
+                                <tr>
+                                    <td colspan="4" class="text-center p-4">
+                                        <i class="fas fa-spinner fa-spin mb-2 text-primary"></i>
+                                        <p class="text-secondary mb-0">Chargement des absences...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Leave Modal -->
+    <div class="modal fade" id="newLeaveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouvelle Demande de Congé</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newLeaveForm">
+                        <div class="form-group">
+                            <label>Type de congé</label>
+                            <select class="form-control" id="leave_type" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="annuel">Congé annuel</option>
+                                <option value="maladie">Maladie</option>
+                                <option value="formation">Formation</option>
+                                <option value="personnel">Personnel</option>
+                                <option value="maternite">Maternité/Paternité</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Date de début</label>
+                                    <input type="date" class="form-control" id="leave_date_debut" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Date de fin</label>
+                                    <input type="date" class="form-control" id="leave_date_fin" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Raison / Commentaire</label>
+                            <textarea class="form-control" rows="3" id="leave_raison" placeholder="Détails de votre demande..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="urgentCheck">
+                                <label class="form-check-label" for="urgentCheck">
+                                    Demande urgente
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="remoteCheck">
+                                <label class="form-check-label" for="remoteCheck">
+                                    Télétravail possible
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" form="newLeaveForm" class="btn btn-primary">Soumettre la demande</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        // Script RH avec fonctionnalité complète
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Charger les statistiques
+            await loadStats();
+            
+            // Charger les demandes en attente
+            await loadPendingLeaves();
+            
+            // Charger les absences en cours
+            await loadCurrentAbsences();
+            
+            // Configurer les événements
+            setupEventHandlers();
+            
+            // Initialiser le graphique
+            initRHChart();
+        });
+
+        // ==================== CHARGEMENT DES DONNÉES ====================
+
+        async function loadStats() {
+            try {
+                const response = await leaveService.getStats();
+                
+                if (response.success && response.data) {
+                    const stats = response.data;
+                    
+                    // Mettre à jour les cartes de statistiques
+                    document.querySelector('.stat-card-rh:nth-child(1) .stat-value').textContent = 
+                        stats.absences_en_cours || 0;
+                    document.querySelector('.stat-card-rh:nth-child(2) .stat-value').textContent = 
+                        stats.total_demandes || 0;
+                    document.querySelector('.stat-card-rh:nth-child(3) .stat-value').textContent = 
+                        (stats.taux_approbation || 0) + '%';
+                    document.querySelector('.stat-card-rh:nth-child(4) .stat-value').textContent = 
+                        stats.en_attente || 0;
+                }
+            } catch (error) {
+                console.error('Erreur chargement stats:', error);
+                showToast('Erreur lors du chargement des statistiques', 'error');
+            }
+        }
+
+        async function loadPendingLeaves() {
+            try {
+                const response = await leaveService.getPending();
+                
+                if (response.success && response.data) {
+                    displayPendingLeaves(response.data);
+                }
+            } catch (error) {
+                console.error('Erreur chargement demandes:', error);
+                showToast('Erreur lors du chargement des demandes', 'error');
+            }
+        }
+
+        // ==================== AFFICHAGE DES DONNÉES ====================
+
+        function displayPendingLeaves(leaves) {
+            const container = document.getElementById('pendingLeavesContainer');
+            
+            if (!leaves || leaves.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                        <p>Aucune demande en attente</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = leaves.map(leave => createLeaveCard(leave)).join('');
+            
+            // Réattacher les événements
+            attachLeaveEventHandlers();
+        }
+
+        function createLeaveCard(leave) {
+            // Dans ce projet simplifié, on simule pas d'impact si non fourni
+            const hasImpact = leave.projets_impactes && leave.projets_impactes.length > 0;
+            const impactHtml = hasImpact ? `
+                <div class="impact-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Impact sur ${leave.projets_impactes.length} projet(s): ${leave.projets_impactes.map(p => p.nom).join(', ')}</span>
+                </div>
+            ` : '';
+            
+            const badgeClass = {
+                'conge_annuel': 'bg-warning',
+                'maladie': 'bg-info',
+                'formation': 'bg-secondary',
+                'personnel': 'bg-primary',
+                'maternite': 'bg-success',
+                'rtt': 'bg-dark'
+            }[leave.type_conge] || 'bg-primary';
+            
+            const typeName = {
+                'conge_annuel': 'Congé annuel',
+                'maladie': 'Maladie',
+                'formation': 'Formation',
+                'personnel': 'Personnel',
+                'maternite': 'Maternité/Paternité',
+                'rtt': 'RTT'
+            }[leave.type_conge] || leave.type_conge;
+            
+            const dateDebut = new Date(leave.date_debut).toLocaleDateString('fr-FR');
+            const dateFin = new Date(leave.date_fin).toLocaleDateString('fr-FR');
+            
+            return `
+                <div class="leave-request-card pending" data-leave-id="${leave.id}">
+                    <div class="leave-info">
+                        <div class="leave-user">
+                            <img src="${leave.avatar_url || `https://ui-avatars.com/api/?name=${leave.prenom}+${leave.nom}&background=4361ee&color=fff`}" 
+                                alt="${leave.prenom} ${leave.nom}" 
+                                width="40" height="40" style="border-radius: 8px;">
+                            <div>
+                                <h5>${leave.prenom} ${leave.nom}</h5>
+                                <div class="leave-dates">
+                                    <i class="far fa-calendar"></i>
+                                    ${dateDebut} - ${dateFin} (${leave.nb_jours} jour${leave.nb_jours > 1 ? 's' : ''})
+                                </div>
+                            </div>
+                        </div>
+                        <div class="leave-type">
+                            <span class="badge ${badgeClass}">${typeName}</span>
+                            ${leave.urgent ? '<span class="badge bg-danger ms-1"><i class="fas fa-exclamation"></i> Urgent</span>' : ''}
+                        </div>
+                    </div>
+                    
+                    ${leave.commentaire ? `
+                        <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <small><strong>Commentaire:</strong> ${leave.commentaire}</small>
+                        </div>
+                    ` : ''}
+                    
+                    ${impactHtml}
+                    
+                    <div class="leave-actions">
+                        <button class="btn btn-success btn-sm approve-btn" data-id="${leave.id}">
+                            <i class="fas fa-check"></i>
+                            Approuver
+                        </button>
+                        <button class="btn btn-danger btn-sm reject-btn" data-id="${leave.id}">
+                            <i class="fas fa-times"></i>
+                            Refuser
+                        </button>
+                        <button class="btn btn-outline btn-sm details-btn" data-id="${leave.id}">
+                            <i class="fas fa-eye"></i>
+                            Détails
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadCurrentAbsences() {
+            try {
+                // Pour simplifier, on récupère toutes les absences et on filtre celles approuvées
+                const response = await leaveService.getAll();
+                
+                if (response.success && response.data) {
+                    const allLeaves = response.data;
+                    const activeLeaves = allLeaves.filter(leave => leave.statut === 'approuve' || leave.statut === 'en_cours');
+                    displayCurrentAbsences(activeLeaves);
+                    
+                    // Générer le calendrier avec toutes les données (approuvées ou en attente)
+                    generateCalendar(allLeaves);
+                }
+            } catch (error) {
+                console.error('Erreur chargement absences courantes:', error);
+            }
+        }
+
+        function displayCurrentAbsences(leaves) {
+            const container = document.getElementById('currentAbsencesContainer');
+            
+            if (!leaves || leaves.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center p-4">
+                            <p class="text-secondary mb-0">Aucune absence en cours</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            container.innerHTML = leaves.map(leave => {
+                const dateDebut = new Date(leave.date_debut).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                const dateFin = new Date(leave.date_fin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                
+                const badgeClass = {
+                    'conge_annuel': 'bg-warning',
+                    'maladie': 'bg-danger',
+                    'formation': 'bg-info',
+                    'personnel': 'bg-primary'
+                }[leave.type_conge] || 'bg-primary';
+                
+                const typeName = leave.type_conge ? leave.type_conge.replace('_', ' ') : 'Congé';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="${leave.avatar_url || `https://ui-avatars.com/api/?name=${leave.prenom}+${leave.nom}&background=4361ee&color=fff`}" alt="${leave.prenom} ${leave.nom}">
+                                <div>
+                                    <div class="user-name">${leave.prenom} ${leave.nom}</div>
+                                    <div class="user-role">${leave.departement || ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge ${badgeClass}" style="text-transform: capitalize;">${typeName}</span></td>
+                        <td>
+                            <div>${dateDebut} - ${dateFin}</div>
+                            <small class="text-muted">${leave.nb_jours || 1} jours</small>
+                        </td>
+                        <td>
+                            <button class="btn-icon small contact-btn" data-user="${leave.prenom} ${leave.nom}" title="Contacter">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==================== ÉVÉNEMENTS ====================
+
+        function setupEventHandlers() {
+            // Nouvelle demande de congé
+            const newLeaveForm = document.getElementById('newLeaveForm');
+            if (newLeaveForm) {
+                newLeaveForm.addEventListener('submit', handleNewLeaveSubmit);
+            }
+            
+            // Navigation calendrier
+            document.getElementById('prevMonth')?.addEventListener('click', () => {
+                showToast('Navigation mois précédent', 'info');
+            });
+            
+            document.getElementById('nextMonth')?.addEventListener('click', () => {
+                showToast('Navigation mois suivant', 'info');
+            });
+            
+            // Toggle calendrier
+            document.getElementById('toggleCalendar')?.addEventListener('click', function() {
+                const calendar = document.getElementById('calendarView');
+                if (calendar.style.display === 'none') {
+                    calendar.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-calendar-alt"></i> Cacher Calendrier';
+                } else {
+                    calendar.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-calendar-alt"></i> Calendrier';
+                }
+            });
+            
+            // Boutons de contact
+            document.querySelectorAll('.contact-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userName = this.dataset.user;
+                    showToast(`Contact avec ${userName}...`, 'info');
+                });
+            });
+        }
+
+        function attachLeaveEventHandlers() {
+            // Boutons d'approbation
+            document.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', handleApprove);
+            });
+            
+            // Boutons de refus
+            document.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.addEventListener('click', handleReject);
+            });
+            
+            // Boutons de détails
+            document.querySelectorAll('.details-btn').forEach(btn => {
+                btn.addEventListener('click', handleDetails);
+            });
+        }
+
+        // ==================== GESTION DES DEMANDES ====================
+
+        async function handleNewLeaveSubmit(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            try {
+                showButtonLoading(submitBtn, 'Envoi...');
+                
+                const leaveData = {
+                    type: document.getElementById('leave_type').value,
+                    date_debut: document.getElementById('leave_date_debut').value,
+                    date_fin: document.getElementById('leave_date_fin').value,
+                    raison: document.getElementById('leave_raison').value,
+                    urgent: document.getElementById('urgentCheck') ? document.getElementById('urgentCheck').checked : false,
+                    teletravail_possible: document.getElementById('remoteCheck') ? document.getElementById('remoteCheck').checked : false
+                };
+                
+                // Validation
+                if (!leaveData.type) {
+                    showToast('Veuillez sélectionner un type de congé', 'error');
+                    hideButtonLoading(submitBtn);
+                    return;
+                }
+                
+                const response = await leaveService.create(leaveData);
+                
+                if (response.success) {
+                    showToast(`Demande créée avec succès! (${response.data.nb_jours} jour${response.data.nb_jours > 1 ? 's' : ''})`, 'success');
+                    
+                    // Fermer la modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('newLeaveModal'));
+                    modal.hide();
+                    
+                    // Réinitialiser le formulaire
+                    form.reset();
+                    
+                    // Recharger les données
+                    await loadStats();
+                    await loadPendingLeaves();
+                } else {
+                    showToast(response.error || 'Erreur lors de la création', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur lors de la création de la demande', 'error');
+            } finally {
+                hideButtonLoading(submitBtn);
+            }
+        }
+
+        async function handleApprove(e) {
+            const leaveId = this.dataset.id;
+            const card = this.closest('.leave-request-card');
+            const userName = card.querySelector('h5').textContent;
+            
+            if (!confirm(`Approuver la demande de ${userName} ?`)) {
+                return;
+            }
+            
+            try {
+                showButtonLoading(this, 'Approbation...');
+                
+                const response = await leaveService.approve(leaveId);
+                
+                if (response.success) {
+                    // Animation de transition
+                    card.classList.remove('pending');
+                    card.classList.add('approved');
+                    card.querySelector('.leave-type .badge').className = 'badge bg-success';
+                    
+                    // Masquer l'avertissement d'impact
+                    const warning = card.querySelector('.impact-warning');
+                    if (warning) {
+                        warning.style.display = 'none';
+                    }
+                    
+                    showToast(`Demande de ${userName} approuvée!`, 'success');
+                    
+                    // Recharger après un délai
+                    setTimeout(async () => {
+                        await loadStats();
+                        await loadPendingLeaves();
+                    }, 1500);
+                } else {
+                    showToast(response.error || 'Erreur lors de l\'approbation', 'error');
+                    hideButtonLoading(this);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur lors de l\'approbation', 'error');
+                hideButtonLoading(this);
+            }
+        }
+
+        async function handleReject(e) {
+            const leaveId = this.dataset.id;
+            const card = this.closest('.leave-request-card');
+            const userName = card.querySelector('h5').textContent;
+            
+            const raison = prompt(`Raison du refus de la demande de ${userName} (optionnel):`);
+            if (raison === null) return; // Annulé
+            
+            try {
+                showButtonLoading(this, 'Refus...');
+                
+                const response = await leaveService.reject(leaveId, raison);
+                
+                if (response.success) {
+                    // Animation de transition
+                    card.classList.remove('pending');
+                    card.classList.add('rejected');
+                    card.querySelector('.leave-type .badge').className = 'badge bg-danger';
+                    
+                    // Masquer l'avertissement d'impact
+                    const warning = card.querySelector('.impact-warning');
+                    if (warning) {
+                        warning.style.display = 'none';
+                    }
+                    
+                    showToast(`Demande de ${userName} refusée`, 'error');
+                    
+                    // Recharger après un délai
+                    setTimeout(async () => {
+                        await loadStats();
+                        await loadPendingLeaves();
+                    }, 1500);
+                } else {
+                    showToast(response.error || 'Erreur lors du refus', 'error');
+                    hideButtonLoading(this);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur lors du refus', 'error');
+                hideButtonLoading(this);
+            }
+        }
+
+        function handleDetails(e) {
+            const leaveId = this.dataset.id;
+            showToast(`Affichage des détails de la demande #${leaveId}`, 'info');
+            // Vous pouvez ouvrir une modal avec plus de détails ici
+        }
+
+        // ==================== CALENDRIER ====================
+
+        function generateCalendar(leaves = []) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            
+            calendarGrid.innerHTML = '';
+            
+            // En-têtes des jours
+            days.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                calendarGrid.appendChild(dayElement);
+            });
+            
+            // Reconnaitre le mois courant
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const currentDate = today.getDate();
+            
+            // Mettre à jour l'en-tête du calendrier
+            const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+            const headerTitle = document.querySelector('.calendar-header h3');
+            if (headerTitle) {
+                headerTitle.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            }
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateElement = document.createElement('div');
+                dateElement.className = 'calendar-date';
+                if (i === currentDate) {
+                    dateElement.classList.add('today');
+                }
+                
+                // Mettre les indicateurs en fonction des données réelles
+                let dotHtml = '';
+                const dateCompare = new Date(currentYear, currentMonth, i);
+                let absencesOnDay = 0;
+                
+                leaves.forEach(leave => {
+                    const lDebut = new Date(leave.date_debut);
+                    const lFin = new Date(leave.date_fin);
+                    // On ignore les heures pour la comparaison
+                    lDebut.setHours(0,0,0,0);
+                    lFin.setHours(23,59,59,999);
+                    
+                    if (dateCompare >= lDebut && dateCompare <= lFin) {
+                        absencesOnDay++;
+                        if (absencesOnDay <= 3) { // Max 3 points affichés
+                            const stateClass = leave.statut === 'approuve' ? 'approved' : 
+                                               leave.statut === 'refuse' ? 'rejected' : 'pending';
+                            dotHtml += `<div class="absence-dot ${stateClass}" title="${leave.prenom} ${leave.nom} (${leave.statut})"></div>`;
+                        }
+                    }
+                });
+                
+                if (absencesOnDay > 3) {
+                    dotHtml += `<div class="absence-dot" style="background:#888; width:10px; border-radius:4px; font-size:8px; line-height:6px; color:white; text-align:center;">+</div>`;
+                }
+                
+                dateElement.innerHTML = `
+                    <div class="date-number">${i}</div>
+                    <div class="absence-indicator">
+                        ${dotHtml}
+                    </div>
+                `;
+                
+                dateElement.addEventListener('click', () => {
+                    if (absencesOnDay > 0) {
+                        showToast(`${absencesOnDay} absence(s) ce jour-là`, 'info');
+                    } else {
+                        // S'il n'y a pas d'absence, le clic pourrait ouvrir le modal de demande à cette date
+                        const newLeaveModal = new bootstrap.Modal(document.getElementById('newLeaveModal'));
+                        const beginInput = document.querySelector('input[type="date"]:nth-of-type(1)');
+                        if (beginInput) {
+                            const m = String(currentMonth + 1).padStart(2, '0');
+                            const d = String(i).padStart(2, '0');
+                            beginInput.value = `${currentYear}-${m}-${d}`;
+                        }
+                        newLeaveModal.show();
+                    }
+                });
+                
+                calendarGrid.appendChild(dateElement);
+            }
+        }
+
+        // ==================== GRAPHIQUE ====================
+
+        function initRHChart() {
+            const rhCtx = document.getElementById('rhChart');
+            if (!rhCtx) return;
+            
+            new Chart(rhCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Approuvés', 'En attente', 'Refusés'],
+                    datasets: [{
+                        data: [65, 15, 20],
+                        backgroundColor: ['#4cc9f0', '#f8961e', '#f94144'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'var(--text-primary)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+    
+</body>
+</html>

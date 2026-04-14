@@ -1,0 +1,24 @@
+@startuml
+title Diagramme de Séquence – Validation d’une Demande de Congé
+
+actor "Manager / RH" as Manager
+participant "Interface Web" as UI
+participant "Service Congés" as SC
+participant "Service Projets" as SP
+participant "Base de Données" as BD
+participant "Journal d’Audit" as JA
+participant "Service Notification" as SN
+
+Manager -> UI : Consulter demandes de congé
+UI -> SC : récupérerDemandes()
+SC -> BD : lireDemandes()
+BD --> SC : listeDemandes
+
+Manager -> UI : Valider / Refuser demande
+UI -> SC : traiterDemande(decision)
+SC -> BD : mettreAJourStatut()
+SC -> SP : calculerImpactProjet()
+SP --> SC : impactProjet
+SC -> JA : enregistrerAction()
+SC -> SN : notifierEmployé()
+@enduml

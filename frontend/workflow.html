@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow & Audit | Mini-ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Additional styles for Workflow page */
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 40px 0;
+            padding: 0 20px;
+        }
+        
+        .workflow-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 3px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+        
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            transition: var(--transition);
+        }
+        
+        .step.active .step-icon {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .step.completed .step-icon {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .workflow-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            transition: var(--transition);
+        }
+        
+        .workflow-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .workflow-card.pending {
+            border-left-color: var(--warning);
+            background: rgba(248, 150, 30, 0.1);
+        }
+        
+        .workflow-card.approved {
+            border-left-color: var(--success);
+            background: rgba(76, 201, 240, 0.1);
+        }
+        
+        .workflow-card.rejected {
+            border-left-color: var(--danger);
+            background: rgba(249, 65, 68, 0.1);
+        }
+        
+        .workflow-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .workflow-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .workflow-type {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .workflow-timeline {
+            margin-top: 20px;
+            padding-left: 20px;
+            border-left: 2px solid var(--border-color);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border-color);
+        }
+        
+        .timeline-item.completed::before {
+            background: var(--success);
+        }
+        
+        .timeline-item.in-progress::before {
+            background: var(--primary);
+        }
+        
+        .timeline-content {
+            font-size: 0.9rem;
+        }
+        
+        .timeline-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        
+        .audit-log {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        
+        .log-icon.create { background: rgba(67, 97, 238, 0.1); color: var(--primary); }
+        .log-icon.update { background: rgba(248, 150, 30, 0.1); color: var(--warning); }
+        .log-icon.approve { background: rgba(76, 201, 240, 0.1); color: var(--success); }
+        .log-icon.reject { background: rgba(249, 65, 68, 0.1); color: var(--danger); }
+        
+        .log-content {
+            flex: 1;
+        }
+        
+        .log-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .log-details {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .log-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stats-cards-workflow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card-wf {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            border-top: 4px solid;
+        }
+        
+        .stat-card-wf.pending { border-color: var(--warning); }
+        .stat-card-wf.approved { border-color: var(--success); }
+        .stat-card-wf.rejected { border-color: var(--danger); }
+        .stat-card-wf.total { border-color: var(--primary); }
+        
+        .stat-card-wf .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card-wf .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <span class="logo-text">Mini-ERP</span>
+            </div>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher dans les workflows...">
+            </div>
+            
+            <div class="nav-icons">
+                <button class="nav-icon" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="nav-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="nav-icon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </button>
+                
+                <div class="user-dropdown">
+                    <div class="user-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=4361ee&color=fff" alt="User">
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Sophie Martin</span>
+                        <span class="user-role">Chef de Projet</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <a href="index.html" class="menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tableau de Bord</span>
+            </a>
+            <a href="projets.html" class="menu-item">
+                <i class="fas fa-project-diagram"></i>
+                <span>Projets</span>
+            </a>
+            <a href="rh.html" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>RH & Congés</span>
+            </a>
+            <a href="documents.html" class="menu-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Documents</span>
+            </a>
+            <a href="workflow.html" class="menu-item active">
+                <i class="fas fa-stream"></i>
+                <span>Workflow</span>
+            </a>
+            <a href="reporting.html" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reporting</span>
+            </a>
+            <a href="parametres.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="sidebar-footer">
+                <div class="user-status">
+                    <div class="status-indicator online"></div>
+                    <span>En ligne</span>
+                </div>
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-stream"></i>
+                    Workflow & Audit
+                </h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newWorkflowModal">
+                        <i class="fas fa-plus"></i>
+                        Nouveau Workflow
+                    </button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-download"></i>
+                        Exporter Logs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-cards-workflow" id="workflowStats">
+                <div class="stat-card-wf total">
+                    <div class="stat-value" id="wf-total"><i class="fas fa-spinner fa-spin"></i></div>
+                    <div class="stat-label">Total demandes</div>
+                </div>
+                <div class="stat-card-wf pending">
+                    <div class="stat-value" id="wf-pending"><i class="fas fa-spinner fa-spin"></i></div>
+                    <div class="stat-label">En attente</div>
+                </div>
+                <div class="stat-card-wf approved">
+                    <div class="stat-value" id="wf-approved"><i class="fas fa-spinner fa-spin"></i></div>
+                    <div class="stat-label">Approuvés</div>
+                </div>
+                <div class="stat-card-wf rejected">
+                    <div class="stat-value" id="wf-rejected"><i class="fas fa-spinner fa-spin"></i></div>
+                    <div class="stat-label">Rejetés</div>
+                </div>
+            </div>
+
+            <!-- Current Workflow Example -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-project-diagram"></i>
+                        Workflow en Cours : Demande de Congé - Sophie Martin
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="workflow-steps">
+                        <div class="step completed">
+                            <div class="step-icon">
+                                <i class="fas fa-pen"></i>
+                            </div>
+                            <div class="step-label">Soumis</div>
+                        </div>
+                        <div class="step completed">
+                            <div class="step-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="step-label">Vérifié</div>
+                        </div>
+                        <div class="step active">
+                            <div class="step-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="step-label">Validation RH</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="step-label">Planification</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-flag-checkered"></i>
+                            </div>
+                            <div class="step-label">Terminé</div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-content">
+                                Demande soumise par Sophie Martin
+                            </div>
+                            <div class="timeline-date">10 Mai 2024 - 09:30</div>
+                        </div>
+                        <div class="timeline-item completed">
+                            <div class="timeline-content">
+                                Vérifiée par Jean Dupont (Manager)
+                            </div>
+                            <div class="timeline-date">10 Mai 2024 - 14:15</div>
+                        </div>
+                        <div class="timeline-item in-progress">
+                            <div class="timeline-content">
+                                En attente de validation par le département RH
+                            </div>
+                            <div class="timeline-date">En cours</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Requests -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-inbox"></i>
+                                Demandes en Attente
+                            </h3>
+                            <span class="badge">5</span>
+                        </div>
+                        <div class="card-body" id="pendingRequestsContainer">
+                            <div class="text-center p-4"><i class="fas fa-spinner fa-spin text-primary"></i></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history"></i>
+                                Audit Log - Aujourd'hui
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="audit-log" id="auditLogContainer">
+                                <div class="text-center p-4"><i class="fas fa-spinner fa-spin text-primary"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list"></i>
+                        Historique d'Audit Complet
+                    </h3>
+                    <div class="card-actions">
+                        <select class="form-select-sm">
+                            <option>Aujourd'hui</option>
+                            <option>7 derniers jours</option>
+                            <option>30 derniers jours</option>
+                            <option>Tout</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Type</th>
+                                    <th>Utilisateur</th>
+                                    <th>IP</th>
+                                    <th>Date</th>
+                                    <th>Détails</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center p-4">
+                                        <i class="fas fa-spinner fa-spin text-primary"></i> Chargement...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Workflow Modal -->
+    <div class="modal fade" id="newWorkflowModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouveau Workflow</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newWorkflowForm">
+                        <div class="form-group">
+                            <label>Type de workflow</label>
+                            <select class="form-control" required>
+                                <option>Sélectionner...</option>
+                                <option>Validation document</option>
+                                <option>Demande d'achat</option>
+                                <option>Approbation budget</option>
+                                <option>Recrutement</option>
+                                <option>Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Titre</label>
+                            <input type="text" class="form-control" placeholder="Titre du workflow" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" rows="3" placeholder="Description..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Assigné à</label>
+                            <select class="form-control" required>
+                                <option>Sélectionner...</option>
+                                <option>Sophie Martin</option>
+                                <option>Jean Dupont</option>
+                                <option>Marie Laurent</option>
+                                <option>Équipe RH</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" form="newWorkflowForm" class="btn btn-primary">Créer Workflow</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Vérifier l'authentification
+            const isAuthenticated = await authService.checkSession();
+            if (!isAuthenticated) {
+                window.location.href = 'login.html';
+                return;
+            }
+            updateUserInterface();
+            await Promise.all([
+                loadWorkflowStats(),
+                loadAuditLog(),
+                loadPendingRequests()
+            ]);
+        });
+
+        async function loadWorkflowStats() {
+            try {
+                const res = await leaveService.getAll();
+                if (!res.success) return;
+                const leaves = res.data;
+                const total = leaves.length;
+                const pending = leaves.filter(l => l.statut === 'en_attente').length;
+                const approved = leaves.filter(l => l.statut === 'approuve').length;
+                const rejected = leaves.filter(l => l.statut === 'refuse').length;
+
+                document.getElementById('wf-total').textContent = total;
+                document.getElementById('wf-pending').textContent = pending;
+                document.getElementById('wf-approved').textContent = approved;
+                document.getElementById('wf-rejected').textContent = rejected;
+            } catch(e) { console.error('Erreur stats workflow:', e); }
+        }
+
+        async function loadPendingRequests() {
+            const container = document.getElementById('pendingRequestsContainer');
+            try {
+                const res = await leaveService.getAll();
+                if (!res.success) return;
+                const pending = res.data.filter(l => l.statut === 'en_attente');
+                
+                if (pending.length === 0) {
+                    container.innerHTML = '<p class="text-secondary text-center p-3">Aucune demande en attente.</p>';
+                    return;
+                }
+
+                container.innerHTML = pending.slice(0, 4).map(l => `
+                    <div class="workflow-card pending">
+                        <div class="workflow-header">
+                            <div>
+                                <div class="workflow-title">Congé ${l.type} &mdash; ${l.user_prenom} ${l.user_nom}</div>
+                                <div class="workflow-type">Congés &middot; ${l.nombre_jours} jour(s)</div>
+                            </div>
+                            <span class="badge bg-warning">${formatDate(l.date_debut)}</span>
+                        </div>
+                        <p>${l.raison || 'Pas de raison spécifiée'}</p>
+                        <div class="workflow-actions d-flex gap-2">
+                            <button class="btn btn-success btn-sm" onclick="approveLeave(${l.id})">
+                                <i class="fas fa-check"></i> Approuver
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectLeave(${l.id})">
+                                <i class="fas fa-times"></i> Rejeter
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                container.innerHTML = '<p class="text-danger p-3">Erreur de chargement.</p>';
+            }
+        }
+
+        async function approveLeave(id) {
+            try {
+                const res = await leaveService.approve(id);
+                if (res.success) { showToast('Congé approuvé !', 'success'); await Promise.all([loadWorkflowStats(), loadPendingRequests()]); }
+            } catch(e) { showToast('Erreur approbation', 'error'); }
+        }
+
+        async function rejectLeave(id) {
+            try {
+                const res = await leaveService.reject(id);
+                if (res.success) { showToast('Congé rejeté.', 'info'); await Promise.all([loadWorkflowStats(), loadPendingRequests()]); }
+            } catch(e) { showToast('Erreur rejet', 'error'); }
+        }
+
+        async function loadAuditLog() {
+            const logContainer = document.getElementById('auditLogContainer');
+            const tableBody = document.getElementById('auditTableBody');
+            try {
+                const res = await apiRequest('/audits');
+                if (!res.success || res.data.length === 0) {
+                    const noDataMsg = '<p class="text-secondary text-center p-3">Aucun enregistrement d\'audit récent.</p>';
+                    if (logContainer) logContainer.innerHTML = noDataMsg;
+                    if (tableBody) tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Aucun audit</td></tr>`;
+                    return;
+                }
+                const audits = res.data;
+
+                const iconMap = { create: {cls:'create',icon:'fa-plus',badge:'bg-info',label:'CRÉER'},
+                    update: {cls:'update',icon:'fa-edit',badge:'bg-warning',label:'MODIFIER'},
+                    approve: {cls:'approve',icon:'fa-check',badge:'bg-success',label:'APPROUVER'},
+                    reject: {cls:'reject',icon:'fa-times',badge:'bg-danger',label:'REJETER'},
+                    login: {cls:'create',icon:'fa-sign-in-alt',badge:'bg-secondary',label:'CONNEXION'} };
+
+                if (logContainer) {
+                    logContainer.innerHTML = audits.slice(0, 6).map(a => {
+                        const m = iconMap[a.action] || {cls:'create',icon:'fa-circle',badge:'bg-secondary',label:a.action?.toUpperCase()};
+                        return `<div class="log-item">
+                            <div class="log-icon ${m.cls}"><i class="fas ${m.icon}"></i></div>
+                            <div class="log-content">
+                                <div class="log-title">${a.nouvelle_valeur || a.action}</div>
+                                <div class="log-details">${a.table_affectee || ''}</div>
+                                <div class="log-meta">
+                                    <span>Par ${a.user_prenom || '?'} ${a.user_nom || ''}</span>
+                                    <span>${formatDate(a.created_at)}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+
+                if (tableBody) {
+                    tableBody.innerHTML = audits.map(a => {
+                        const m = iconMap[a.action] || {badge:'bg-secondary',label:a.action?.toUpperCase() || '-'};
+                        const initials = `${(a.user_prenom||'?').charAt(0)}${(a.user_nom||'').charAt(0)}`;
+                        return `<tr>
+                            <td><span class="badge ${m.badge}">${m.label}</span></td>
+                            <td>${a.table_affectee || '-'}</td>
+                            <td><div class="user-cell d-flex align-items-center gap-2">
+                                <img src="${a.avatar_url || `https://ui-avatars.com/api/?name=${initials}&background=4361ee&color=fff`}" width="30" height="30" style="border-radius:6px">
+                                <span>${a.user_prenom || ''} ${a.user_nom || 'Inconnu'}</span>
+                            </div></td>
+                            <td>${a.ip_address || '-'}</td>
+                            <td>${formatDate(a.created_at)}</td>
+                            <td><button class="btn-icon small"><i class="fas fa-eye"></i></button></td>
+                        </tr>`;
+                    }).join('');
+                }
+            } catch(e) {
+                console.error('Erreur audit:', e);
+                if (logContainer) logContainer.innerHTML = '<p class="text-danger p-3">Erreur de chargement du log.</p>';
+            }
+        }
+    </script>
+</html>

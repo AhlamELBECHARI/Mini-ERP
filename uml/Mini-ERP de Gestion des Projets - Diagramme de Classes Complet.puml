@@ -1,0 +1,103 @@
+@startuml
+title Mini-ERP de Gestion des Projets - Diagramme de Classes
+
+' =======================
+' Utilisateurs & Sécurité
+' =======================
+class User {
+  +id: int
+  +name: String
+  +email: String
+  +password: String
+}
+
+class Role {
+  +id: int
+  +name: String
+}
+
+User "1" -- "*" Role : possède >
+
+' =======================
+' Gestion des Projets
+' =======================
+class Project {
+  +id: int
+  +name: String
+  +description: String
+  +startDate: Date
+  +endDate: Date
+  +status: String
+}
+
+class Task {
+  +id: int
+  +title: String
+  +priority: String
+  +status: String
+  +deadline: Date
+}
+
+Project "1" -- "*" Task : contient >
+User "1" -- "*" Project : gère >
+User "1" -- "*" Task : affecté >
+
+' =======================
+' RH - Congés & Absences
+' =======================
+class LeaveRequest {
+  +id: int
+  +startDate: Date
+  +endDate: Date
+  +type: String
+  +status: String
+}
+
+User "1" -- "*" LeaveRequest : demande >
+Project "*" -- "*" LeaveRequest : impacte >
+
+' =======================
+' Gestion Documentaire
+' =======================
+class Document {
+  +id: int
+  +name: String
+  +version: int
+  +path: String
+  +createdAt: Date
+}
+
+Project "1" -- "*" Document : associé >
+
+' =======================
+' Workflow & Audit
+' =======================
+class Workflow {
+  +id: int
+  +action: String
+  +status: String
+  +createdAt: Date
+}
+
+class AuditLog {
+  +id: int
+  +action: String
+  +date: Date
+}
+
+User "1" -- "*" Workflow : déclenche >
+Workflow "1" -- "*" AuditLog : génère >
+
+' =======================
+' Reporting
+' =======================
+class Report {
+  +id: int
+  +type: String
+  +generatedAt: Date
+}
+
+Report "*" -- "*" Project : analyse >
+Report "*" -- "*" LeaveRequest : analyse >
+
+@enduml

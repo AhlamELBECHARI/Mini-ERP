@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+title Mini-ERP RH – Diagramme de Cas d’Utilisation (Gestion des Congés)
+
+actor Employé
+actor "Manager / RH" as Manager
+actor Administrateur
+actor Système
+
+rectangle "Système de Gestion des Congés" {
+
+  Employé -- (S’authentifier)
+  Employé -- (Soumettre une demande de congé)
+  Employé -- (Consulter l’état des congés)
+  Employé -- (Consulter l’historique des congés)
+
+  Manager -- (S’authentifier)
+  Manager -- (Consulter les demandes de congé)
+  Manager -- (Valider / Refuser une demande)
+  Manager -- (Consulter l’impact sur les projets)
+  Manager -- (Consulter le planning des absences)
+
+  Administrateur -- (Gérer les utilisateurs)
+  Administrateur -- (Gérer les rôles et permissions)
+  Administrateur -- (Gérer les types de congés)
+  Administrateur -- (Consulter le journal d’audit)
+
+  (Soumettre une demande de congé) --> (Notifier les acteurs) : <<include>>
+  (Valider / Refuser une demande) --> (Enregistrer l’action) : <<include>>
+  (Valider / Refuser une demande) --> (Calculer l’impact projet) : <<include>>
+
+  Système -- (Notifier les acteurs)
+  Système -- (Calculer l’impact projet)
+  Système -- (Générer les statistiques RH)
+  Système -- (Enregistrer l’action)
+
+}
+@enduml

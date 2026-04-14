@@ -1,0 +1,93 @@
+@startuml
+title Mini-ERP RH – Diagramme de Classes (Gestion des Congés)
+
+' ============================
+' Utilisateurs & Sécurité
+' ============================
+class Utilisateur {
+  +id: int
+  +nom: String
+  +email: String
+  +motDePasse: String
+}
+
+class Role {
+  +id: int
+  +nom: String
+}
+
+Utilisateur "1" -- "*" Role : possède >
+
+' ============================
+' Gestion des Congés
+' ============================
+class DemandeConge {
+  +id: int
+  +dateDebut: Date
+  +dateFin: Date
+  +statut: String
+  +dateDemande: Date
+}
+
+class TypeConge {
+  +id: int
+  +libelle: String
+}
+
+Utilisateur "1" -- "*" DemandeConge : soumet >
+DemandeConge "*" -- "1" TypeConge : type >
+
+' ============================
+' Impact Projet (secondaire)
+' ============================
+class Projet {
+  +id: int
+  +nom: String
+  +statut: String
+}
+
+DemandeConge "*" -- "*" Projet : impacte >
+
+' ============================
+' Workflow & Validation
+' ============================
+class Workflow {
+  +id: int
+  +etat: String
+  +dateCreation: Date
+}
+
+class Validation {
+  +id: int
+  +decision: String
+  +dateValidation: Date
+}
+
+DemandeConge "1" -- "1" Workflow : suit >
+Workflow "1" -- "*" Validation : contient >
+Utilisateur "1" -- "*" Validation : valide >
+
+' ============================
+' Audit & Traçabilité
+' ============================
+class JournalAudit {
+  +id: int
+  +action: String
+  +dateAction: Date
+}
+
+Utilisateur "1" -- "*" JournalAudit : effectue >
+DemandeConge "1" -- "*" JournalAudit : trace >
+
+' ============================
+' Statistiques & Reporting
+' ============================
+class StatistiqueConge {
+  +id: int
+  +periode: String
+  +tauxAbsence: float
+}
+
+StatistiqueConge "*" -- "*" Utilisateur : analyse >
+
+@enduml
