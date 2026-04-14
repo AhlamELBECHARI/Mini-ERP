@@ -6,10 +6,9 @@ Ce projet consiste en la conception et le développement d'un **Mini-ERP modulai
 
 L'application est développée selon une approche **ingénierie logicielle**, en respectant les phases classiques : analyse des besoins, conception, implémentation, base de données, tests et maintenance.
 
-
 ---
 
-## 3. Objectifs du projet
+## 2. Objectifs du projet
 
 Les objectifs principaux du Mini-ERP sont :
 
@@ -21,7 +20,7 @@ Les objectifs principaux du Mini-ERP sont :
 
 ---
 
-## 4. Analyse des besoins (Requirements & Analysis)
+## 3. Analyse des besoins (Requirements & Analysis)
 
 ### Acteurs du système
 
@@ -43,7 +42,7 @@ Les objectifs principaux du Mini-ERP sont :
 
 ---
 
-## 5. Architecture modulaire
+## 4. Architecture modulaire
 
 Le système est organisé de manière modulaire comme suit :
 
@@ -58,14 +57,14 @@ Les modules sont interconnectés via une API RESTful pour assurer la cohérence 
 
 ---
 
-## 6. Conception du système (System & Software Design)
+## 5. Conception du système (System & Software Design)
 
 ### Architecture technique
 
 * **Frontend** : HTML, CSS, JavaScript, Chart.js
 * **Backend** : Node.js avec Express.js
 * **Base de données** : MySQL avec MySQL2
-* **Authentification** : JWT (JSON Web Tokens) avec BCrypt
+* **Authentification** : JWT (JSON Web Tokens) avec hachage BCrypt
 * **Sécurité** : Helmet.js, CORS, validation des inputs
 
 ### Diagrammes UML
@@ -88,7 +87,7 @@ Les diagrammes sont réalisés avec **PlantUML** et les fichiers `.puml` sont in
 
 ---
 
-## 7. Schéma de base de données et normalisation
+## 6. Schéma de base de données et normalisation
 
 ### Architecture de la base de données
 
@@ -145,7 +144,7 @@ CREATE INDEX idx_conges_user ON conges(user_id);
 
 ---
 
-## 8. Implémentation
+## 7. Implémentation
 
 ### Structure du projet
 
@@ -183,15 +182,13 @@ mini-erp-2/
 
 ### Gestion de versions
 
-* Utilisation de Git avec workflow collaboratif
-* Branches fonctionnelles pour chaque module
+* Utilisation de Git pour le versioning complet
 * Commits atomiques avec messages explicites
-* Pull Requests pour la revue de code
-* Tags pour les versions majeures
+* Push régulier vers le dépôt GitHub
 
 ---
 
-## 9. Initialisation de la base de données
+## 8. Initialisation de la base de données
 
 ### Création de la base
 
@@ -213,7 +210,7 @@ Le système synchronise automatiquement un compte admin au premier lancement :
 
 ---
 
-## 10. Sécurité et authentification
+## 9. Sécurité et authentification
 
 ### Stratégie de sécurité
 
@@ -235,7 +232,7 @@ Le système synchronise automatiquement un compte admin au premier lancement :
 
 ---
 
-## 11. Tests et maintenance
+## 10. Tests et maintenance
 
 ### Processus de tests
 
@@ -255,9 +252,8 @@ Le système synchronise automatiquement un compte admin au premier lancement :
 1. **Identification** : Via tests, retours utilisateurs, monitoring
 2. **Signalement** : Issue GitHub avec template standardisé
 3. **Priorisation** : Basé sur impact et fréquence
-4. **Correction** : Branche dédiée, tests de régression
-5. **Validation** : Revue par un pair, tests complets
-6. **Déploiement** : Intégration progressive
+4. **Correction** : Revue et tests de régression
+5. **Validation** : Tests complets avant livraison
 
 ### Analyse statique avec SonarQube
 
@@ -274,60 +270,9 @@ Résultats SonarQube sur notre codebase :
 - **Maintenabilité** : Dette technique minimale
 - **Couverture** : 85% des lignes analysées
 
-### Maintenance évolutive
-
-- **Architecture modulaire** : Facilité d'ajout de nouvelles fonctionnalités
-- **API RESTful** : Intégration avec d'autres systèmes
-- **Documentation** : README complet et commentaires de code
-- **Monitoring** : Logs d'audit structurés pour le débogage
-
-
-
 ---
 
-## 12. Démonstration vidéo
-
-Le dépôt contient une vidéo de démonstration montrant :
-
-* Authentification et gestion des rôles
-* Navigation par utilisateur avec restrictions
-* Gestion complète des projets et tâches
-* Processus de demande de congés
-* Consultation des tableaux de bord dynamiques
-* Gestion documentaire et Audit Trail
-
----
-
-## 13. Organisation du travail et collaboration
-
-Le travail a été réalisé selon un **mode collaboratif basé sur le principe du fork**.
-
-### Workflow Git :
-
-1. **Fork principal** : Chaque membre crée son fork du dépôt principal
-2. **Développement local** : Travail indépendant sur les modules assignés
-3. **Branches fonctionnelles** : Une branche par fonctionnalité/mailleur
-4. **Pull Requests** : Revue de code avant intégration
-5. **Merge contrôlé** : Intégration progressive avec validation
-
-### Répartition des tâches :
-
-- **Wijdane** : Structure backend, authentification, sécurité, schéma DB
-- **Fatma** : Module RH, gestion des congés, calendrier
-- **Ahlam** : Module projets, tâches, interface projet
-- **Asmae** : Dashboard, reporting, UI/UX, intégration
-
-Pour des raisons de **centralisation finale et de contraintes de dépôt**, **une seule membre de l'équipe a effectué le push final** sur le dépôt principal après validation collective.
-
-### Outils de collaboration :
-
-- **GitHub** : Versioning et revue de code
-- **Discord** : Communication quotidienne
-- **Google Drive** : Documentation partagée
-
----
-
-## 14. Déploiement et installation
+## 11. Déploiement et installation
 
 ### Prérequis
 
@@ -339,8 +284,8 @@ Pour des raisons de **centralisation finale et de contraintes de dépôt**, **un
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/repo/mini-erp-2.git
-cd mini-erp-2
+git clone https://github.com/AhlamELBECHARI/Mini-ERP.git
+cd Mini-ERP
 
 # 2. Configurer la base de données
 mysql -u root -p < database/schema.sql
@@ -369,7 +314,7 @@ node server-simple.js
 
 ---
 
-## 15. Résultats et réalisations
+## 12. Résultats et réalisations
 
 ### Fonctionnalités implémentées
 
@@ -390,22 +335,22 @@ node server-simple.js
 - **Couverture SonarQube** : 85%
 - **Temps de réponse API** : < 200ms en moyenne
 
+---
 
-## 16. Conclusion
+## 13. Conclusion
 
-Ce projet illustre une approche complète de développement web basée sur les principes du génie logiciel. Nous avons démontré notre capacité à :
+Ce projet illustre une approche complète de développement web basée sur les principes du génie logiciel. La méthodologie rigoureuse a permis de :
 
 1. **Analyser** les besoins métier complexes
 2. **Concevoir** une architecture modulaire et scalable
 3. **Implémenter** une solution robuste et sécurisée
 4. **Tester** rigoureusement avec outils professionnels
-5. **Collaborer** efficacement en équipe distribuée
 
 Le Mini-ERP représente une solution professionnelle, prête pour la production, qui répond aux besoins réels des PME en matière de gestion de projet et de ressources humaines.
 
 ---
 
-## 17. Références et crédits
+## 14. Références et crédits
 
 ### Technologies utilisées
 - Node.js & Express.js
